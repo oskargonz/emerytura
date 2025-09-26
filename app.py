@@ -110,9 +110,30 @@ st.markdown("""
     }
     div[data-testid="stSidebar"] {
         background-color: #2d2d2d;
+        position: fixed;
+        height: 100vh;
+        overflow-y: auto;
     }
     div[data-testid="stSidebar"] .stMarkdown {
         color: #cccccc;
+    }
+    .sidebar-button {
+        position: sticky;
+        bottom: 0;
+        background-color: #2d2d2d;
+        padding: 1rem 0;
+        margin-top: 1rem;
+        border-top: 2px solid #404040;
+    }
+    .compact-input {
+        margin-bottom: 0.5rem;
+    }
+    .stNumberInput {
+        margin-bottom: 0.5rem;
+    }
+    .stNumberInput > label {
+        font-size: 0.9rem;
+        margin-bottom: 0.2rem;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -122,52 +143,57 @@ st.markdown("<div style='text-align: center; color: #cccccc; font-size: 1.2rem; 
 
 # Sidebar for inputs
 with st.sidebar:
-    st.markdown("### 🎯 Twoje dane finansowe")
-    st.markdown("---")
+    # Scrollable content area
+    with st.container():
+        st.markdown("### 🎯 Dane finansowe")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            current_age = st.number_input(
+                "🎂 Wiek", min_value=0, max_value=100, value=30, step=1,
+                help="Twój obecny wiek w latach"
+            )
+        with col2:
+            projected_lifespan = st.number_input(
+                "⏰ Śmierć", min_value=50, max_value=120, value=90, step=1,
+                help="Do jakiego wieku planujesz żyć"
+            )
+        
+        capital = st.number_input(
+            "💼 Kapitał początkowy (PLN)", min_value=0, value=300000, step=1000,
+            help="Ile pieniędzy masz już zaoszczędzone"
+        )
+        
+        monthly_contrib = st.number_input(
+            "💸 Miesięczna inwestycja (PLN)", min_value=0, value=5000, step=100,
+            help="Ile planujesz inwestować każdego miesiąca"
+        )
+        
+        st.markdown("### 📊 Parametry inwestycyjne")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            annual_return = st.number_input(
+                "📈 Zwrot (%)", min_value=0.0, value=6.0, step=0.1,
+                help="Oczekiwana roczna stopa zwrotu z inwestycji"
+            )
+        with col2:
+            inflation = st.number_input(
+                "🔥 Inflacja (%)", min_value=0.0, value=3.0, step=0.1,
+                help="Przewidywana roczna inflacja"
+            )
+        
+        st.markdown("### 🏠 Styl życia")
+        
+        annual_expenses = st.number_input(
+            "🛒 Miesięczne wydatki (PLN)", min_value=0, value=12000, step=100,
+            help="Ile będziesz potrzebować miesięcznie na emeryturze"
+        )
     
-    current_age = st.number_input(
-        "🎂 Obecny wiek", min_value=0, max_value=100, value=30, step=1,
-        help="Twój obecny wiek w latach"
-    )
-    
-    capital = st.number_input(
-        "💼 Kapitał początkowy (PLN)", min_value=0, value=300000, step=1000,
-        help="Ile pieniędzy masz już zaoszczędzone"
-    )
-    
-    monthly_contrib = st.number_input(
-        "💸 Miesięczna inwestycja (PLN)", min_value=0, value=5000, step=100,
-        help="Ile planujesz inwestować każdego miesiąca"
-    )
-    
-    st.markdown("### 📊 Parametry inwestycyjne")
-    st.markdown("---")
-    
-    annual_return = st.number_input(
-        "📈 Średnia stopa zwrotu (%)", min_value=0.0, value=6.0, step=0.1,
-        help="Oczekiwana roczna stopa zwrotu z inwestycji"
-    )
-    
-    inflation = st.number_input(
-        "🔥 Roczna inflacja (%)", min_value=0.0, value=3.0, step=0.1,
-        help="Przewidywana roczna inflacja"
-    )
-    
-    st.markdown("### 🏠 Styl życia")
-    st.markdown("---")
-    
-    annual_expenses = st.number_input(
-        "🛒 Miesięczne wydatki (PLN)", min_value=0, value=12000, step=100,
-        help="Ile będziesz potrzebować miesięcznie na emeryturze"
-    )
-    
-    projected_lifespan = st.number_input(
-        "⏰ Przewidywany wiek śmierci", min_value=50, max_value=120, value=90, step=1,
-        help="Do jakiego wieku planujesz żyć"
-    )
-    
-    st.markdown("---")
+    # Sticky button at the bottom
+    st.markdown('<div class="sidebar-button">', unsafe_allow_html=True)
     calculate_button = st.button("🚀 OBLICZ EMERYTURĘ", use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # Main content area
 if not calculate_button:
