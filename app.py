@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 from retirement_calc import calculate_retirement_age
 
 st.title("💰 Kalkulator Wczesnej Emerytury")
@@ -22,7 +23,7 @@ projected_lifespan = st.number_input(
 inflation = st.number_input("Roczna inflacja (%)", min_value=0.0, value=3.0, step=0.1)
 
 if st.button("Policz"):
-    age, kapital_po_emeryturze, chart = calculate_retirement_age(
+    age, kapital_po_emeryturze, chart, capital_timeline = calculate_retirement_age(
         current_age=current_age,
         monthly_contribution=monthly_contrib,
         annual_investment_return=annual_return,
@@ -36,6 +37,32 @@ if st.button("Policz"):
         st.success(f"Możesz przejść na emeryturę w wieku {age} lat 🎉")
         st.info(f"Kapitał pozostały po śmierci: {kapital_po_emeryturze:,.0f} PLN")
         
+        # Capital over time chart
+        if capital_timeline:
+            st.subheader("📈 Kapitał w czasie")
+            
+            # Create DataFrame for the chart
+            df = pd.DataFrame(capital_timeline)
+            
+            # Create chart data with proper formatting
+            chart_data = df.set_index('age')['capital']
+            
+            # Display the line chart
+            st.line_chart(chart_data)
+            
+            # Add phase information with colors
+            st.write("**Legenda:**")
+            col1, col2 = st.columns(2)
+            with col1:
+                st.write("🟢 **Faza akumulacji** - oszczędzanie do emerytury")
+            with col2:
+                st.write("🔴 **Faza emerytury** - wydawanie kapitału")
+            
+            # Show key milestones
+            st.write("**Kluczowe punkty:**")
+            retirement_capital = df[df['phase'] == 'Accumulation']['capital'].iloc[-1] if len(df[df['phase'] == 'Accumulation']) > 0 else 0
+            st.write(f"• Kapitał w momencie przejścia na emeryturę: {retirement_capital:,.0f} PLN")
+            
         # Tworzenie wykresu danych z tabeli chart
         if chart:
             st.subheader("📊 Analiza scenariuszy emerytury")

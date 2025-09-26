@@ -31,6 +31,7 @@ def calculate_retirement_age(
     # Check each possible retirement age
     for retirement_age in range(current_age, death_age):
         capital = starting_capital
+        current_timeline = []  # Track capital for this retirement scenario
 
         # Accumulation phase (until retirement age)
         accumulation_years = retirement_age - current_age
@@ -38,6 +39,11 @@ def calculate_retirement_age(
             # Contributions accounting for inflation
             annual_contribution = monthly_contribution * 12 * ((1 + inflation_dec) ** year)
             capital = capital * (1 + return_rate) + annual_contribution
+            current_timeline.append({
+                'age': current_age + year + 1,
+                'capital': capital,
+                'phase': 'Accumulation'
+            })
 
         # Retirement phase (from retirement age to death)
         retirement_years = death_age - retirement_age
@@ -49,15 +55,21 @@ def calculate_retirement_age(
                 retirement_value * 12 * ((1 + inflation_dec) ** (accumulation_years + year))
             )
             capital_after_retirement = capital_after_retirement * (1 + return_rate) - annual_withdrawal
+            current_timeline.append({
+                'age': retirement_age + year + 1,
+                'capital': max(0, capital_after_retirement),  # Don't show negative capital
+                'phase': 'Retirement'
+            })
 
             # If capital falls below zero, this retirement age is not possible
             if capital_after_retirement < 0:
                 chart.append((retirement_age, retirement_age + year))
                 break
+        
         if capital_after_retirement > 0:
-            return retirement_age, capital_after_retirement, chart
+            return retirement_age, capital_after_retirement, chart, current_timeline
 
-    return None, None  # Impossible to retire with given parameters
+    return None, None, None, None  # Impossible to retire with given parameters
 
 
 # # Example usage
