@@ -44,13 +44,20 @@ if st.button("Policz"):
             # Create DataFrame for the chart
             df = pd.DataFrame(capital_timeline)
             
-            # Create chart data with proper formatting
-            chart_data = df.set_index('age')['capital']
+            # Separate data by phase
+            accumulation_data = df[df['phase'] == 'Accumulation'].set_index('age')['capital']
+            retirement_data = df[df['phase'] == 'Retirement'].set_index('age')['capital']
             
-            # Display the line chart
+            # Create chart data with both phases
+            chart_data = pd.DataFrame({
+                'Faza akumulacji': accumulation_data,
+                'Faza emerytury': retirement_data
+            })
+            
+            # Display the line chart with colored series
             st.line_chart(chart_data)
             
-            # Add phase information with colors
+            # Add phase information
             st.write("**Legenda:**")
             col1, col2 = st.columns(2)
             with col1:
@@ -62,6 +69,9 @@ if st.button("Policz"):
             st.write("**Kluczowe punkty:**")
             retirement_capital = df[df['phase'] == 'Accumulation']['capital'].iloc[-1] if len(df[df['phase'] == 'Accumulation']) > 0 else 0
             st.write(f"• Kapitał w momencie przejścia na emeryturę: {retirement_capital:,.0f} PLN")
+            max_capital = df['capital'].max()
+            max_capital_age = df[df['capital'] == max_capital]['age'].iloc[0]
+            st.write(f"• Maksymalny kapitał: {max_capital:,.0f} PLN w wieku {max_capital_age} lat")
             
         # Tworzenie wykresu danych z tabeli chart
         if chart:
