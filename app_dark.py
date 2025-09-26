@@ -291,6 +291,13 @@ if calculate_button:
                 # Display the line chart with colored series
                 st.line_chart(chart_data)
             
+            # Add phase information
+            st.write("**Legenda:**")
+            col1, col2 = st.columns(2)
+            with col1:
+                st.write("🟢 **Faza akumulacji** - oszczędzanie do emerytury")
+            with col2:
+                st.write("🔴 **Faza emerytury** - wydawanie kapitału")
             
             # Show key milestones
             st.write("**Kluczowe punkty:**")
