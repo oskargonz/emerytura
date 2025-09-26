@@ -32,6 +32,7 @@ def calculate_retirement_age(
     for retirement_age in range(current_age, death_age):
         capital = starting_capital
         current_timeline = []  # Track capital for this retirement scenario
+        cost_timeline = []  # Track monthly costs over time
 
         # Accumulation phase (until retirement age)
         accumulation_years = retirement_age - current_age
@@ -44,6 +45,13 @@ def calculate_retirement_age(
                 'capital': capital,
                 'phase': 'Accumulation'
             })
+            # Track monthly costs during accumulation (assumed to be retirement_value adjusted for inflation)
+            monthly_cost_inflated = retirement_value * ((1 + inflation_dec) ** year)
+            cost_timeline.append({
+                'age': current_age + year + 1,
+                'monthly_cost': monthly_cost_inflated,
+                'phase': 'Accumulation'
+            })
 
         # Retirement phase (from retirement age to death)
         retirement_years = death_age - retirement_age
@@ -54,10 +62,16 @@ def calculate_retirement_age(
             annual_withdrawal = (
                 retirement_value * 12 * ((1 + inflation_dec) ** (accumulation_years + year))
             )
+            monthly_withdrawal = annual_withdrawal / 12
             capital_after_retirement = capital_after_retirement * (1 + return_rate) - annual_withdrawal
             current_timeline.append({
                 'age': retirement_age + year + 1,
                 'capital': max(0, capital_after_retirement),  # Don't show negative capital
+                'phase': 'Retirement'
+            })
+            cost_timeline.append({
+                'age': retirement_age + year + 1,
+                'monthly_cost': monthly_withdrawal,
                 'phase': 'Retirement'
             })
 
@@ -67,9 +81,9 @@ def calculate_retirement_age(
                 break
         
         if capital_after_retirement > 0:
-            return retirement_age, capital_after_retirement, chart, current_timeline
+            return retirement_age, capital_after_retirement, chart, current_timeline, cost_timeline
 
-    return None, None, None, None  # Impossible to retire with given parameters
+    return None, None, None, None, None  # Impossible to retire with given parameters
 
 
 # # Example usage

@@ -7,15 +7,15 @@ st.title("💰 Kalkulator Wczesnej Emerytury")
 current_age = st.number_input(
     "Obecny wiek", min_value=0, max_value=100, value=30, step=1
 )
-capital = st.number_input("Kapitał początkowy", min_value=0, value=100000, step=1000)
+capital = st.number_input("Kapitał początkowy", min_value=0, value=300000, step=1000)
 monthly_contrib = st.number_input(
-    "Miesięczna inwestycja", min_value=0, value=20000, step=1000
+    "Miesięczna inwestycja", min_value=0, value=5000, step=100
 )
 annual_return = (
-    st.number_input("Średnia stopa zwrotu (%)", min_value=0.0, value=5.0, step=0.1)
+    st.number_input("Średnia stopa zwrotu (%)", min_value=0.0, value=6.0, step=0.1)
 )
 annual_expenses = st.number_input(
-    "Miesięczne wydatki", min_value=0, value=40000, step=1000
+    "Miesięczne wydatki", min_value=0, value=12000, step=100
 )
 projected_lifespan = st.number_input(
     "Przewidywany wiek śmierci", min_value=50, max_value=120, value=90, step=1
@@ -23,7 +23,7 @@ projected_lifespan = st.number_input(
 inflation = st.number_input("Roczna inflacja (%)", min_value=0.0, value=3.0, step=0.1)
 
 if st.button("Policz"):
-    age, kapital_po_emeryturze, chart, capital_timeline = calculate_retirement_age(
+    age, kapital_po_emeryturze, chart, capital_timeline, cost_timeline = calculate_retirement_age(
         current_age=current_age,
         monthly_contribution=monthly_contrib,
         annual_investment_return=annual_return,
@@ -72,6 +72,46 @@ if st.button("Policz"):
             max_capital = df['capital'].max()
             max_capital_age = df[df['capital'] == max_capital]['age'].iloc[0]
             st.write(f"• Maksymalny kapitał: {max_capital:,.0f} PLN w wieku {max_capital_age} lat")
+        
+        # Monthly costs over time chart
+        if cost_timeline:
+            st.subheader("💸 Miesięczne koszty w czasie (wpływ inflacji)")
+            
+            # Create DataFrame for the costs chart
+            cost_df = pd.DataFrame(cost_timeline)
+            
+            # Separate data by phase for costs
+            accumulation_costs = cost_df[cost_df['phase'] == 'Accumulation'].set_index('age')['monthly_cost']
+            retirement_costs = cost_df[cost_df['phase'] == 'Retirement'].set_index('age')['monthly_cost']
+            
+            # Create chart data with both phases
+            cost_chart_data = pd.DataFrame({
+                'Koszty podczas akumulacji': accumulation_costs,
+                'Koszty podczas emerytury': retirement_costs
+            })
+            
+            # Display the line chart
+            st.line_chart(cost_chart_data)
+            
+            # Show cost information
+            st.write("**Informacje o kosztach:**")
+            current_monthly_cost = annual_expenses
+            retirement_monthly_cost = cost_df[cost_df['phase'] == 'Retirement']['monthly_cost'].iloc[0] if len(cost_df[cost_df['phase'] == 'Retirement']) > 0 else current_monthly_cost
+            final_monthly_cost = cost_df[cost_df['phase'] == 'Retirement']['monthly_cost'].iloc[-1] if len(cost_df[cost_df['phase'] == 'Retirement']) > 0 else current_monthly_cost
+            
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("Obecne koszty miesięczne", f"{current_monthly_cost:,.0f} PLN")
+            with col2:
+                st.metric("Koszty w momencie emerytury", f"{retirement_monthly_cost:,.0f} PLN", 
+                         f"+{((retirement_monthly_cost/current_monthly_cost-1)*100):,.1f}%")
+            with col3:
+                st.metric("Koszty na koniec życia", f"{final_monthly_cost:,.0f} PLN",
+                         f"+{((final_monthly_cost/current_monthly_cost-1)*100):,.1f}%")
+            
+            st.info(f"💡 **Wpływ inflacji:** Przy inflacji {inflation}% rocznie, Twoje koszty życia będą rosły każdego roku. "
+                   f"To oznacza, że za {age - current_age} lat będziesz potrzebować {retirement_monthly_cost:,.0f} PLN miesięcznie "
+                   f"zamiast obecnych {current_monthly_cost:,.0f} PLN, aby utrzymać ten sam standard życia.")
             
         # Tworzenie wykresu danych z tabeli chart
         if chart:
