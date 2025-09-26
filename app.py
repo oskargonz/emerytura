@@ -23,13 +23,13 @@ inflation = st.number_input("Roczna inflacja (%)", min_value=0.0, value=3.0, ste
 
 if st.button("Policz"):
     age, kapital_po_emeryturze, chart = calculate_retirement_age(
-        obecny_wiek=current_age,
-        miesieczna_wplata=monthly_contrib,
-        roczny_zwrot_z_inwestycji=annual_return,
-        wiek_smierci=projected_lifespan,
-        inflacja=inflation,
-        wartosc_emerytury=annual_expenses,
-        kapital_startowy=capital,
+        current_age=current_age,
+        monthly_contribution=monthly_contrib,
+        annual_investment_return=annual_return,
+        death_age=projected_lifespan,
+        inflation=inflation,
+        retirement_value=annual_expenses,
+        starting_capital=capital,
     )
     
     if age:

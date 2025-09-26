@@ -1,80 +1,80 @@
 def calculate_retirement_age(
-    obecny_wiek,
-    miesieczna_wplata,
-    roczny_zwrot_z_inwestycji,
-    wiek_smierci,
-    inflacja,
-    wartosc_emerytury,
-    kapital_startowy,
+    current_age,
+    monthly_contribution,
+    annual_investment_return,
+    death_age,
+    inflation,
+    retirement_value,
+    starting_capital,
 ):
     """
-    Oblicza wiek, w którym można przejść na emeryturę.
+    Calculates the age at which one can retire.
 
     Args:
-        obecny_wiek: obecny wiek osoby
-        miesieczna_wplata: średnia miesięczna wpłata do inwestycji
-        roczny_zwrot_z_inwestycji: roczny zwrot z inwestycji (w procentach, np. 6 dla 6%)
-        wiek_smierci: przewidywany wiek śmierci
-        inflacja: roczna inflacja (w procentach, np. 3 dla 3%)
-        wartosc_emerytury: miesięczna wartość emerytury (w dzisiejszych pieniądzach)
-        kapital_startowy: początkowy kapitał
+        current_age: current age of the person
+        monthly_contribution: average monthly contribution to investments
+        annual_investment_return: annual investment return (in percentage, e.g., 6 for 6%)
+        death_age: expected age of death
+        inflation: annual inflation (in percentage, e.g., 3 for 3%)
+        retirement_value: monthly retirement value (in today's money)
+        starting_capital: initial capital
 
     Returns:
-        wiek_emerytury: wiek, w którym można przejść na emeryturę, lub None jeśli niemożliwe
+        retirement_age: age at which one can retire, or None if impossible
     """
 
-    # Konwersja procentów na wartości dziesiętne
-    zwrot = roczny_zwrot_z_inwestycji / 100
-    inflacja_dec = inflacja / 100
+    # Convert percentages to decimal values
+    return_rate = annual_investment_return / 100
+    inflation_dec = inflation / 100
     chart = []
 
-    # Sprawdzamy każdy możliwy wiek emerytury
-    for wiek_emerytury in range(obecny_wiek, wiek_smierci):
-        kapital = kapital_startowy
+    # Check each possible retirement age
+    for retirement_age in range(current_age, death_age):
+        capital = starting_capital
 
-        # Faza akumulacji (do wieku emerytury)
-        lata_akumulacji = wiek_emerytury - obecny_wiek
-        for rok in range(lata_akumulacji):
-            # Wpłaty uwzględniające inflację
-            wplata_roczna = miesieczna_wplata * 12 * ((1 + inflacja_dec) ** rok)
-            kapital = kapital * (1 + zwrot) + wplata_roczna
+        # Accumulation phase (until retirement age)
+        accumulation_years = retirement_age - current_age
+        for year in range(accumulation_years):
+            # Contributions accounting for inflation
+            annual_contribution = monthly_contribution * 12 * ((1 + inflation_dec) ** year)
+            capital = capital * (1 + return_rate) + annual_contribution
 
-        # Faza emerytury (od wieku emerytury do śmierci)
-        lata_emerytury = wiek_smierci - wiek_emerytury
-        kapital_po_emeryturze = kapital
+        # Retirement phase (from retirement age to death)
+        retirement_years = death_age - retirement_age
+        capital_after_retirement = capital
 
-        for rok in range(lata_emerytury):
-            # Wypłata emerytury uwzględniająca inflację
-            wyplata_roczna = (
-                wartosc_emerytury * 12 * ((1 + inflacja_dec) ** (lata_akumulacji + rok))
+        for year in range(retirement_years):
+            # Retirement withdrawal accounting for inflation
+            annual_withdrawal = (
+                retirement_value * 12 * ((1 + inflation_dec) ** (accumulation_years + year))
             )
-            kapital_po_emeryturze = kapital_po_emeryturze * (1 + zwrot) - wyplata_roczna
+            capital_after_retirement = capital_after_retirement * (1 + return_rate) - annual_withdrawal
 
-            # Jeśli kapitał spadnie poniżej zera, ten wiek emerytury nie jest możliwy
-            if kapital_po_emeryturze < 0:
-                chart.append((wiek_emerytury, wiek_emerytury + rok))
+            # If capital falls below zero, this retirement age is not possible
+            if capital_after_retirement < 0:
+                chart.append((retirement_age, retirement_age + year))
                 break
-        if kapital_po_emeryturze > 0:
-            return wiek_emerytury, kapital_po_emeryturze, chart
+        if capital_after_retirement > 0:
+            return retirement_age, capital_after_retirement, chart
 
-    return None, None  # Niemożliwe przejście na emeryturę z podanymi parametrami
+    return None, None  # Impossible to retire with given parameters
 
 
-# # Przykład użycia
+# # Example usage
 # if __name__ == "__main__":
-#     wiek_emerytury, kapital_po_emeryturze, chart = oblicz_wiek_emerytury(
-#         obecny_wiek=30,
-#         miesieczna_wplata=5000,
-#         roczny_zwrot_z_inwestycji=6,
-#         wiek_smierci=90,
-#         inflacja=3,
-#         wartosc_emerytury=12000,
-#         kapital_startowy=300000
+#     retirement_age, capital_after_retirement, chart = calculate_retirement_age(
+#         current_age=30,
+#         monthly_contribution=5000,
+#         annual_investment_return=6,
+#         death_age=90,
+#         inflation=3,
+#         retirement_value=12000,
+#         starting_capital=300000
 #     )
 
-#     if wiek_emerytury:
-#         print(f"Możesz przejść na emeryturę w wieku: {wiek_emerytury} lat")
-#         print(f"To oznacza {wiek_emerytury - 30} lat oszczędzania")
-#         print(f"Kapitał po śmierci: {kapital_po_emeryturze}")
+#     if retirement_age:
+#         print(f"Możesz przejść na emeryturę w wieku: {retirement_age} lat")
+#         print(f"To oznacza {retirement_age - 30} lat oszczędzania")
+#         print(f"Kapitał po śmierci: {capital_after_retirement}")
 #     else:
 #         print("Z podanymi parametrami przejście na emeryturę nie jest możliwe")
