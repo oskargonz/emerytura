@@ -23,15 +23,16 @@ projected_lifespan = st.number_input(
 inflation = st.number_input("Roczna inflacja (%)", min_value=0.0, value=3.0, step=0.1)
 
 if st.button("Policz"):
-    age, kapital_po_emeryturze, chart, capital_timeline, cost_timeline = calculate_retirement_age(
-        current_age=current_age,
-        monthly_contribution=monthly_contrib,
-        annual_investment_return=annual_return,
-        death_age=projected_lifespan,
-        inflation=inflation,
-        retirement_value=annual_expenses,
-        starting_capital=capital,
-    )
+    with st.spinner('Obliczam wiek emerytury i tworzę wykresy... ⏳'):
+        age, kapital_po_emeryturze, chart, capital_timeline, cost_timeline = calculate_retirement_age(
+            current_age=current_age,
+            monthly_contribution=monthly_contrib,
+            annual_investment_return=annual_return,
+            death_age=projected_lifespan,
+            inflation=inflation,
+            retirement_value=annual_expenses,
+            starting_capital=capital,
+        )
     
     if age:
         st.success(f"Możesz przejść na emeryturę w wieku {age} lat 🎉")
@@ -41,21 +42,22 @@ if st.button("Policz"):
         if capital_timeline:
             st.subheader("📈 Kapitał w czasie")
             
-            # Create DataFrame for the chart
-            df = pd.DataFrame(capital_timeline)
-            
-            # Separate data by phase
-            accumulation_data = df[df['phase'] == 'Accumulation'].set_index('age')['capital']
-            retirement_data = df[df['phase'] == 'Retirement'].set_index('age')['capital']
-            
-            # Create chart data with both phases
-            chart_data = pd.DataFrame({
-                'Faza akumulacji': accumulation_data,
-                'Faza emerytury': retirement_data
-            })
-            
-            # Display the line chart with colored series
-            st.line_chart(chart_data)
+            with st.spinner('Tworzę wykres kapitału w czasie...'):
+                # Create DataFrame for the chart
+                df = pd.DataFrame(capital_timeline)
+                
+                # Separate data by phase
+                accumulation_data = df[df['phase'] == 'Accumulation'].set_index('age')['capital']
+                retirement_data = df[df['phase'] == 'Retirement'].set_index('age')['capital']
+                
+                # Create chart data with both phases
+                chart_data = pd.DataFrame({
+                    'Faza akumulacji': accumulation_data,
+                    'Faza emerytury': retirement_data
+                })
+                
+                # Display the line chart with colored series
+                st.line_chart(chart_data)
             
             # Add phase information
             st.write("**Legenda:**")
@@ -77,21 +79,22 @@ if st.button("Policz"):
         if cost_timeline:
             st.subheader("💸 Miesięczne koszty w czasie (wpływ inflacji)")
             
-            # Create DataFrame for the costs chart
-            cost_df = pd.DataFrame(cost_timeline)
-            
-            # Separate data by phase for costs
-            accumulation_costs = cost_df[cost_df['phase'] == 'Accumulation'].set_index('age')['monthly_cost']
-            retirement_costs = cost_df[cost_df['phase'] == 'Retirement'].set_index('age')['monthly_cost']
-            
-            # Create chart data with both phases
-            cost_chart_data = pd.DataFrame({
-                'Koszty podczas akumulacji': accumulation_costs,
-                'Koszty podczas emerytury': retirement_costs
-            })
-            
-            # Display the line chart
-            st.line_chart(cost_chart_data)
+            with st.spinner('Tworzę wykres kosztów w czasie...'):
+                # Create DataFrame for the costs chart
+                cost_df = pd.DataFrame(cost_timeline)
+                
+                # Separate data by phase for costs
+                accumulation_costs = cost_df[cost_df['phase'] == 'Accumulation'].set_index('age')['monthly_cost']
+                retirement_costs = cost_df[cost_df['phase'] == 'Retirement'].set_index('age')['monthly_cost']
+                
+                # Create chart data with both phases
+                cost_chart_data = pd.DataFrame({
+                    'Koszty podczas akumulacji': accumulation_costs,
+                    'Koszty podczas emerytury': retirement_costs
+                })
+                
+                # Display the line chart
+                st.line_chart(cost_chart_data)
             
             # Show cost information
             st.write("**Informacje o kosztach:**")
@@ -118,28 +121,30 @@ if st.button("Policz"):
             st.subheader("📊 Analiza scenariuszy emerytury")
             st.write("Wykres pokazuje w jakim wieku skończą się fundusze dla różnych wieków przejścia na emeryturę:")
             
-            # Przygotowanie danych do wykresu
-            retirement_ages = [item[0] for item in chart]
-            funds_depletion_ages = [item[1] for item in chart]
-            
-            # Tworzenie DataFrame dla wykresu
-            chart_data = {
-                'Wiek przejścia na emeryturę': retirement_ages,
-                'Wiek wyczerpania funduszy': funds_depletion_ages
-            }
-            
-            # Wykres liniowy
-            st.line_chart(chart_data, x='Wiek przejścia na emeryturę', y='Wiek wyczerpania funduszy')
+            with st.spinner('Tworzę wykres scenariuszy emerytury...'):
+                # Przygotowanie danych do wykresu
+                retirement_ages = [item[0] for item in chart]
+                funds_depletion_ages = [item[1] for item in chart]
+                
+                # Tworzenie DataFrame dla wykresu
+                chart_data = {
+                    'Wiek przejścia na emeryturę': retirement_ages,
+                    'Wiek wyczerpania funduszy': funds_depletion_ages
+                }
+                
+                # Wykres liniowy
+                st.line_chart(chart_data, x='Wiek przejścia na emeryturę', y='Wiek wyczerpania funduszy')
             
             # Dodatkowa tabela z danymi
             st.subheader("📋 Szczegółowe dane")
             
-            # Tworzenie danych tabeli
-            table_data = {
-                'Wiek przejścia na emeryturę': retirement_ages,
-                'Wiek wyczerpania funduszy': funds_depletion_ages,
-                'Lata na emeryturze': [funds_age - ret_age for ret_age, funds_age in chart]
-            }
-            st.dataframe(table_data)
+            with st.spinner('Przygotowuję szczegółowe dane...'):
+                # Tworzenie danych tabeli
+                table_data = {
+                    'Wiek przejścia na emeryturę': retirement_ages,
+                    'Wiek wyczerpania funduszy': funds_depletion_ages,
+                    'Lata na emeryturze': [funds_age - ret_age for ret_age, funds_age in chart]
+                }
+                st.dataframe(table_data)
     else:
         st.error("Z podanymi parametrami przejście na emeryturę nie jest możliwe 😞")
